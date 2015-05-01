@@ -45,6 +45,7 @@ public:
 	 */
 	UAVObject(UAVObjManager* manager, unsigned int id, std::string name, std::string description, std::string category, int isSingleInstance, int isSettings, int flightAccess, int gcsAccess, int isFlightAckNeeded, int isGcsAckNeeded, int flightTelemetryUpdateMode, int gcsTelemetryUpdateMode, int flightTelemetryUpdatePeriod, int gcsTelemetryUpdatePeriod, int loggingUpdatePeriod);
 	unsigned int UAVObjGetID() const;
+    std::string getName() const {return name;};
 	
 	virtual unsigned short UAVObjGetInstance() const = 0;
 

@@ -84,6 +84,8 @@ UAVObject* UAVObjManager::UAVObjGetByID(unsigned int id) {
 
 UAVObject* UAVObjManager::UAVObjGetByID(unsigned int id, unsigned int instance) {
 
+    if (UAVObjMngrIsSingleInstanceType(id))
+        return UAVObjGetByID(id);
 	for(std::list<UAVObject*>::iterator it = listObjects.begin(); it != listObjects.end(); ++it) {
 		if(((**it).UAVObjGetID() == id) && ((**it).UAVObjGetInstance() == instance))
 			return (*it);

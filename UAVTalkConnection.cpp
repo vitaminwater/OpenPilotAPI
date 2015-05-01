@@ -127,26 +127,18 @@ bool UAVTalkConnection::UAVTalkSendObjectRequest(UAVObject* obj, int timeoutMs) 
 	packet.message_type = UAVTALK_TYPE_OBJ_REQ;
 	packet.length = 8;
 	packet.object_id = obj->UAVObjGetID();
-	if (!obj->UAVObjIsSingleInstance()) {
-		packet.length += 2;
-		packet.instance_id = obj->UAVObjGetInstance();
-	}
+    packet.length += 2;
+    packet.instance_id = obj->UAVObjGetInstance();
 
 	packet.checksum = this->UAVTalkComputeCRC(0, (unsigned char*)&packet.sync_val, 1);
 	packet.checksum = this->UAVTalkComputeCRC(packet.checksum, (unsigned char*)&packet.message_type, 1);
 	packet.checksum = this->UAVTalkComputeCRC(packet.checksum, (unsigned char*)&packet.length, 2);
 	packet.checksum = this->UAVTalkComputeCRC(packet.checksum, (unsigned char*)&packet.object_id, 4);
-	if(!obj->UAVObjIsSingleInstance()) {
-		packet.checksum = this->UAVTalkComputeCRC(packet.checksum, (unsigned char*)&packet.instance_id, 2);
-	}
+    packet.checksum = this->UAVTalkComputeCRC(packet.checksum, (unsigned char*)&packet.instance_id, 2);
 
 	int displace = 0;
 	unsigned char* outgoingData;
-	if (!obj->UAVObjIsSingleInstance()) {
-		outgoingData = (unsigned char*)malloc(11);
-	} else {
-		outgoingData = (unsigned char*)malloc(9);
-	}
+    outgoingData = (unsigned char*)malloc(11);
 	
 	memcpy(outgoingData + displace, &packet.sync_val, 1);
 	displace += 1;
@@ -156,10 +148,8 @@ bool UAVTalkConnection::UAVTalkSendObjectRequest(UAVObject* obj, int timeoutMs) 
 	displace += 2;
 	memcpy(outgoingData + displace, &packet.object_id, 4);
 	displace += 4;
-	if (!obj->UAVObjIsSingleInstance()) {
-		memcpy(outgoingData + displace, &packet.instance_id, 2);
-		displace += 2;
-	}
+    memcpy(outgoingData + displace, &packet.instance_id, 2);
+    displace += 2;
 	memcpy(outgoingData + displace, &packet.checksum, 1);
 	displace += 1;
 
@@ -193,6 +183,7 @@ void UAVTalkConnection::processNewMessage(unsigned char* data, int remaining) {
 	unsigned char type;
 	unsigned short length;
 	unsigned int objectID;
+    unsigned short instance;
 	unsigned char* objData;
 
 	memcpy(&sync_val, data, 1);
@@ -215,6 +206,11 @@ void UAVTalkConnection::processNewMessage(unsigned char* data, int remaining) {
 	remaining--;
 	data++;
 	remaining--;
+	memcpy(&instance, data, 2);
+	data++;
+	remaining--;
+	data++;
+	remaining--;
 
 	if(sync_val != 0x3c) {
 		if(DEBUG) std::cout << std::hex << "Not expected char found: " << sync_val << std::dec << "packet is going to be dropped." << std::endl;
@@ -223,21 +219,15 @@ void UAVTalkConnection::processNewMessage(unsigned char* data, int remaining) {
 
 	if(DEBUG) std::cout << std::hex << "Processing message of type: " <<  (int)type << " with length: " << length << " for object: " << objectID << std::dec << std::endl;
 
+    //std::cout << "type: " << (int)type << " length: " << (int)length << " objectID: " << (int)objectID << std::endl;
+
 	UAVObject* obj;
 	UAVObjEvent event;
 	switch (type) {
 	case UAVTALK_TYPE_OBJ:
-		if (fatherManager->UAVObjMngrIsSingleInstanceType(objectID)) {
-			objData = (unsigned char*) malloc(length - 4);
-			memcpy(objData, data, length - 4);
-			obj = fatherManager->UAVObjGetByID(objectID);
-		} else {
-			unsigned short instance;
-			memcpy(&instance, data, 2);
-			objData = (unsigned char*) malloc(length - 6);
-			memcpy(objData, data, length - 6);
-			obj = fatherManager->UAVObjGetByID(objectID, instance);
-		}
+        objData = (unsigned char*) malloc(length - 6);
+        memcpy(objData, data, length - 6);
+        obj = fatherManager->UAVObjGetByID(objectID, instance);
 		if (obj == NULL) {
 			//TODO: Raise error, shouldn't happen
 			if(DEBUG) std::cout << "Object not found" << std::endl;
@@ -247,17 +237,9 @@ void UAVTalkConnection::processNewMessage(unsigned char* data, int remaining) {
 		fatherManager->UAVObjMngrPushEvent(event);
 		break;
 	case UAVTALK_TYPE_OBJ_REQ:
-		if (fatherManager->UAVObjMngrIsSingleInstanceType(objectID)) {
-			objData = (unsigned char*) malloc(length - 4);
-			memcpy(objData, data, length - 4);
-			obj = fatherManager->UAVObjGetByID(objectID);
-		} else {
-			unsigned short instance;
-			memcpy(&instance, data, 2);
-			objData = (unsigned char*) malloc(length - 6);
-			memcpy(objData, data, length - 6);
-			obj = fatherManager->UAVObjGetByID(objectID, instance);
-		}
+        objData = (unsigned char*) malloc(length - 6);
+        memcpy(objData, data, length - 6);
+        obj = fatherManager->UAVObjGetByID(objectID, instance);
 		if (obj == NULL) {
 			//TODO: Raise error, shouldn't happen
 			if(DEBUG) std::cout << "Object not found" << std::endl;
@@ -268,17 +250,9 @@ void UAVTalkConnection::processNewMessage(unsigned char* data, int remaining) {
 		fatherManager->UAVObjMngrPushEvent(event);
 		break;
 	case UAVTALK_TYPE_OBJ_ACK:
-		if (fatherManager->UAVObjMngrIsSingleInstanceType(objectID)) {
-			objData = (unsigned char*) malloc(length - 4);
-			memcpy(objData, data, length - 4);
-			obj = fatherManager->UAVObjGetByID(objectID);
-		} else {
-			unsigned short instance;
-			memcpy(&instance, data, 2);
-			objData = (unsigned char*) malloc(length - 6);
-			memcpy(objData, data, length - 6);
-			obj = fatherManager->UAVObjGetByID(objectID, instance);
-		}
+        objData = (unsigned char*) malloc(length - 6);
+        memcpy(objData, data, length - 6);
+        obj = fatherManager->UAVObjGetByID(objectID, instance);
 		if (obj == NULL) {
 			if(DEBUG) std::cout << "Object not found" << std::endl;
 			this->UAVTalkSendNack(objectID);
@@ -306,6 +280,10 @@ void UAVTalkConnection::processNewMessage(unsigned char* data, int remaining) {
 		if(DEBUG) std::cout << "Wrong message type" << std::endl;
 		break;
 	}
+    /*if (obj != NULL) {
+        std::cout << "Received: " << obj->getName() << std::endl;
+        std::cout << obj->prettyPrint() << std::endl;
+    }*/
 }
 
 bool UAVTalkConnection::UAVTalkSendAck(UAVObject* obj) {

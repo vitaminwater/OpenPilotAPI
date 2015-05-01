@@ -106,11 +106,11 @@ unsigned short FlightStatus::UAVObjGetNumInstances() const {
 std::string FlightStatus::prettyPrint() {
 	std::stringstream ss;
 	ss << "\nPrinting object: flightstatus" << std::endl;
-	ss << "\tArmed: " << dataFields.Armed << std::endl;
-	ss << "\tFlightMode: " << dataFields.FlightMode << std::endl;
-	ss << "\tFlightModeAssist: " << dataFields.FlightModeAssist << std::endl;
-	ss << "\tAssistedControlState: " << dataFields.AssistedControlState << std::endl;
-	ss << "\tAssistedThrottleState: " << dataFields.AssistedThrottleState << std::endl;
+	ss << "\tArmed: " << (int)dataFields.Armed << std::endl;
+	ss << "\tFlightMode: " << (int)dataFields.FlightMode << std::endl;
+	ss << "\tFlightModeAssist: " << (int)dataFields.FlightModeAssist << std::endl;
+	ss << "\tAssistedControlState: " << (int)dataFields.AssistedControlState << std::endl;
+	ss << "\tAssistedThrottleState: " << (int)dataFields.AssistedThrottleState << std::endl;
 	ss << "\tControlChain: " << dataFields.ControlChain << std::endl;
 
 	return ss.str();

@@ -10,6 +10,7 @@
 using namespace std;
 
 USBStream::USBStream(int vid, int pid) {
+    this->ok = false;
 	this->vid = vid;
 	this->pid = pid;
 	
@@ -21,7 +22,9 @@ USBStream::USBStream(int vid, int pid) {
 
 	if(!handle) {
 		if(DEBUG)std::cout << "Could not open device." << std::endl;
+        return;
 	}
+    this->ok = true;
 	
 }
 

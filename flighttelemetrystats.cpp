@@ -135,7 +135,7 @@ std::string FlightTelemetryStats::prettyPrint() {
 	ss << "\tRxFailures: " << dataFields.RxFailures << std::endl;
 	ss << "\tRxSyncErrors: " << dataFields.RxSyncErrors << std::endl;
 	ss << "\tRxCrcErrors: " << dataFields.RxCrcErrors << std::endl;
-	ss << "\tStatus: " << dataFields.Status << std::endl;
+	ss << "\tStatus: " << (int)dataFields.Status << std::endl;
 
 	return ss.str();
 }

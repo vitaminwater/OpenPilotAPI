@@ -22,12 +22,14 @@ class USBStream: public iostream {
 private:
 	hid_device *handle;
 	int vid, pid;
+    bool ok;
 
 public:
 	USBStream(int vid, int pid);
 	int write(const unsigned char* s, streamsize n);
 	int read(unsigned char* s, streamsize n);
 	void close(){};
+    bool isOk(){return ok;};
 
 };
 
